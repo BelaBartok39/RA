@@ -9,6 +9,7 @@ NR
 
 Claude
 
+```html, css 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,3 +104,4 @@ Claude
     </footer>
 </body>
 </html>
+```
