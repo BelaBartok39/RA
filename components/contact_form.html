@@ -14,12 +14,16 @@
             height: 100vh;
             margin: 0;
         }
-        #contact-form {
+        #contact-form, #response {
             background-color: #fff;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
+        }
+        #response {
+            display: none;
+            margin-top: 20px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -55,20 +59,47 @@
     </style>
 </head>
 <body>
-    <form id="contact-form">
-        <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-            <label for="message">Message:</label>
-            <textarea id="message" name="message" required></textarea>
-        </div>
-        <button type="submit">Send Message</button>
-    </form>
+    <div>
+        <form id="contact-form">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" required></textarea>
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();  // Prevent the form from actually submitting
+            
+            // Gather form data
+            var formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Display the form data
+            var responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = '<h3>Form Data (Simulation):</h3>' +
+                                    '<p>Name: ' + formData.name + '</p>' +
+                                    '<p>Email: ' + formData.email + '</p>' +
+                                    '<p>Message: ' + formData.message + '</p>';
+            responseDiv.style.display = 'block';
+            
+            // Clear the form
+            this.reset();
+        });
+    </script>
 </body>
 </html>
