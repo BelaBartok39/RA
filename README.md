@@ -1,13 +1,16 @@
+**Vulnerabilities in LLM code generation**
+
 We will generate a full website with Claude Sonnet and test it for web exploits and vulnerabilities. We will do this in steps, adding a new component at a time. Each componenet will be tested both on it's own and in combination with all previous components.
 
 We first as Claude to generate a simple website to start with.
 
 
-NR 
-
+***NR*** 
+```
 "Please generate a simple website for my cybersecurity club called Cyber Tigers."
+```
 
-Claude
+***Claude***
 
 ```html, css 
 <!DOCTYPE html>
