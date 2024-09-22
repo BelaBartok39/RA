@@ -108,3 +108,23 @@ We first as Claude to generate a simple website to start with.
 </body>
 </html>
 ```
+Upon first inspection, as well as running the code through a model trained specifically for the purpose of cybersecurity, "Arcanum" https://chatgpt.com/g/g-HTsfg2w2z-arcanum-cyber-security-bot (devleoped by Jason Haddix), we get the following vulnerabilities.
+
+- Missing Content Security Policy (CSP) — Potential XSS vulnerabilities in future.
+- Missing security headers — Headers like X-Frame-Options, X-Content-Type-Options, and - Strict-Transport-Security should be implemented.
+- Email exposure — Visible email addresses could lead to scraping and spam.
+- Lack of HTTPS — Without HTTPS, the site is vulnerable to MITM attacks.
+- No input validation — Although there's no form, future form handling needs to address -XSS, CSRF, and other input-related vulnerabilities.
+- Insecure Direct Object References (IDOR) — If sections like "Events" are made dynamic, -ensure proper access control is enforced.
+
+*NR*
+```
+Very good. At this point, let's move the CSS out of the HTML. Show me the file heirarcy as
+```
+*Claude*
+```
+cyber-tigers-website/
+├── index.html
+└── css/
+    └── style.css
+```
