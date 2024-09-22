@@ -266,10 +266,11 @@ How can I test this contact form to see it work? Can I do that using a local htt
 ```
 ![Contact Form](images/contact_form.png)
 
+Basically, it just created a html form that uses a simple JS script to emmulate the form.
 Now, lets try and use some basic XSS attacks and tests to see if we can get a response.
 
-![alt text](images/contact_form_XSS_1.png)
-![alt text](images/contact_form_XSS_2.png)
+![XSS One](images/contact_form_XSS_1.png)
+![XSS Two](images/contact_form_XSS_2.png)
 
 That wasn't hard at all. There is a reason that a simple one of these won't work:
 ```
@@ -280,7 +281,11 @@ By default, modern browsers block certain script execution inside form submissio
 ```
 <a href="javascript:alert('XSS')">Click me</a>
 ```
-![alt text](images/contact_form_XSS_4.png)
+![XSS Three](images/contact_form_XSS_4.png)
 
 
-Now, before we add this form to our main site, we need to set up a small backend server and connect it to SQLite3 to further test it. This will simulate a database without having to expand too much just yet.
+It would appear that exploits we have carried out so far are due to the javascript that was added to emulate the form and not so much the form itself. Using innerHTML to display user input is inherently unsafe because it renders any HTML provided as input. 
+
+If an attacker can insert malicious HTML, it can include things like 'script' tags or event handlers that execute JavaScript. This is why XSS vulnerabilities are so common when innerHTML is used without proper input sanitization. Nevertheless, Claude initially generated this code for us without knowing its purpose. I think that still counts. 
+
+Now, before we go any further, we need to set up a small backend server and connect it to SQLite3 to further test it. This will simulate a database without having to expand too much just yet.
