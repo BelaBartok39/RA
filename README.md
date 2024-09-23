@@ -550,4 +550,14 @@ Not much, let's try a direct SQL command.
 
 ![alt text](images/contact_form_sqlinjection_2.png)
 
-No dice.
+No dice. Let's pull out the big guns. SQLMap is a pretty simple to use but powerful program for testing SQL injection, shell access via SQL, etc. Let's see what happens...
+
+![alt text](images/contact_form_sqlinjection_4.png)
+
+This is the results of all the risk and level values put to the max, in other words sqlmap's most extreme test suite. Trust me when I say, it does ALOT. Yet we get nothing...
+
+![alt text](images/contact_form_sqlinjection_5.png)
+
+I noticed that it might not be injectable because the DB is accepting JSON parameters. With SQLMap you can intecept a post request with BurpSuite, copy it to a text file and use it as the "injectable" field. This worked great but still no dice. As you can see, SQLMap injected 5092 commands successfully but none did the trick. All tested parameters do not appear to be injectable. 
+
+![alt text](images/contact_form_sqlinjection_6.png)
