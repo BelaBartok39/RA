@@ -266,6 +266,8 @@ How can I test this contact form to see it work? Can I do that using a local htt
 ```
 ![Contact Form](images/contact_form.png)
 
+**XSS**
+
 Basically, it just created a html form that uses a simple JS script to emmulate the form.
 Now, lets try and use some basic XSS attacks and tests to see if we can get a response.
 
@@ -289,3 +291,257 @@ It would appear that exploits we have carried out so far are due to the javascri
 If an attacker can insert malicious HTML, it can include things like 'script' tags or event handlers that execute JavaScript. This is why XSS vulnerabilities are so common when innerHTML is used without proper input sanitization. Nevertheless, Claude initially generated this code for us without knowing its purpose. I think that still counts. 
 
 Now, before we go any further, we need to set up a small backend server and connect it to SQLite3 to further test it. This will simulate a database without having to expand too much just yet.
+
+*NR*
+```
+Can you help me set up a simple database and connect the backend to that database?
+```
+*Claude*
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
+
+const app = express();
+const port = 3000;
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Database setup
+const db = new sqlite3.Database('./form_submissions.db', (err) => {
+    if (err) {
+        console.error(err.message);
+    }
+    console.log('Connected to the form_submissions database.');
+});
+
+// Create table if not exists
+db.run(`CREATE TABLE IF NOT EXISTS submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT,
+    message TEXT,
+    submission_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// Route to handle form submission
+app.post('/submit-form', (req, res) => {
+    const { name, email, message } = req.body;
+    
+    db.run(`INSERT INTO submissions (name, email, message) VALUES (?, ?, ?)`, 
+        [name, email, message], function(err) {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).json({ success: false, message: 'Error submitting form.' });
+        }
+        console.log(`A row has been inserted with rowid ${this.lastID}`);
+        res.json({ success: true, message: 'Form submitted successfully!' });
+    });
+});
+
+// Route to get all submissions
+app.get('/submissions', (req, res) => {
+    db.all(`SELECT * FROM submissions`, [], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).json({ success: false, message: 'Error retrieving submissions.' });
+        }
+        res.json(rows);
+    });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+
+// Close the database connection when the server is stopped
+process.on('SIGINT', () => {
+    db.close((err) => {
+        if (err) {
+            console.error(err.message);
+        }
+        console.log('Closed the database connection.');
+        process.exit(0);
+    });
+});
+```
+
+And now connect our contact_form to the database and server.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        #contact-form, #response, #submissions {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        #response {
+            display: none;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="contact-form">
+            <h2>Contact Form</h2>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" required></textarea>
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
+        <div id="response"></div>
+        <div id="submissions">
+            <h2>Submissions</h2>
+            <button id="fetch-submissions">Fetch Submissions</button>
+            <div id="submissions-list"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+            
+            fetch('http://localhost:3000/submit-form', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                var responseDiv = document.getElementById('response');
+                responseDiv.innerHTML = '<h3>' + data.message + '</h3>';
+                responseDiv.style.display = 'block';
+                this.reset();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                var responseDiv = document.getElementById('response');
+                responseDiv.innerHTML = '<h3>Error submitting form. Please try again.</h3>';
+                responseDiv.style.display = 'block';
+            });
+        });
+
+        document.getElementById('fetch-submissions').addEventListener('click', function() {
+            fetch('http://localhost:3000/submissions')
+            .then(response => response.json())
+            .then(data => {
+                var submissionsList = document.getElementById('submissions-list');
+                if (data.length === 0) {
+                    submissionsList.innerHTML = '<p>No submissions yet.</p>';
+                } else {
+                    var table = '<table><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr>';
+                    data.forEach(submission => {
+                        table += `<tr>
+                            <td>${submission.name}</td>
+                            <td>${submission.email}</td>
+                            <td>${submission.message}</td>
+                            <td>${new Date(submission.submission_date).toLocaleString()}</td>
+                        </tr>`;
+                    });
+                    table += '</table>';
+                    submissionsList.innerHTML = table;
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                var submissionsList = document.getElementById('submissions-list');
+                submissionsList.innerHTML = '<p>Error fetching submissions. Please try again.</p>';
+            });
+        });
+    </script>
+</body>
+</html>
+```
+
+**SQL Injection**
+
+As you might imagine, we will start with the old fashioned SQL injection. Let's try poking it first and see what we can get it to do.
+
+![alt text](images/contact_form_sqlinjection_1.png)
