@@ -550,6 +550,4 @@ Not much, let's try a direct SQL command.
 
 ![alt text](images/contact_form_sqlinjection_2.png)
 
-Here we go, the SQLite3 DB responded with an confirmation message to commit the statement we just sent...
-
-![alt text](images/contact_form_sqlinjection_3.png)
+No dice.
