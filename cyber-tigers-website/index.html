@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Tigers - Cybersecurity Club</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        #response, #submissions {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        #response {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -17,6 +41,7 @@
             <li><a href="#about">About</a></li>
             <li><a href="#events">Events</a></li>
             <li><a href="#contact">Contact</a></li>
+            <li><a href="#submissions">Submissions</a></li>
         </ul>
     </nav>
     <main>
@@ -54,12 +79,79 @@
                 </div>
                 <button type="submit">Send Message</button>
             </form>
+            <div id="response"></div>
             <p>Or email us at: info@cybertigers.com</p>
             <p>Follow us on social media: @CyberTigers</p>
+        </section>
+        <section id="submissions">
+            <h2>Recent Submissions</h2>
+            <button id="fetch-submissions">Fetch Submissions</button>
+            <div id="submissions-list"></div>
         </section>
     </main>
     <footer>
         <p>&copy; 2024 Cyber Tigers. All rights reserved.</p>
     </footer>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+            
+            fetch('http://localhost:3000/submit-form', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                var responseDiv = document.getElementById('response');
+                responseDiv.innerHTML = '<h3>' + data.message + '</h3>';
+                responseDiv.style.display = 'block';
+                this.reset();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                var responseDiv = document.getElementById('response');
+                responseDiv.innerHTML = '<h3>Error submitting form. Please try again.</h3>';
+                responseDiv.style.display = 'block';
+            });
+        });
+
+        document.getElementById('fetch-submissions').addEventListener('click', function() {
+            fetch('http://localhost:3000/submissions')
+            .then(response => response.json())
+            .then(data => {
+                var submissionsList = document.getElementById('submissions-list');
+                if (data.length === 0) {
+                    submissionsList.innerHTML = '<p>No submissions yet.</p>';
+                } else {
+                    var table = '<table><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr>';
+                    data.forEach(submission => {
+                        table += `<tr>
+                            <td>${submission.name}</td>
+                            <td>${submission.email}</td>
+                            <td>${submission.message}</td>
+                            <td>${new Date(submission.submission_date).toLocaleString()}</td>
+                        </tr>`;
+                    });
+                    table += '</table>';
+                    submissionsList.innerHTML = table;
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                var submissionsList = document.getElementById('submissions-list');
+                submissionsList.innerHTML = '<p>Error fetching submissions. Please try again.</p>';
+            });
+        });
+    </script>
 </body>
 </html>
