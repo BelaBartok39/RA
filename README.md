@@ -561,3 +561,51 @@ This is the results of all the risk and level values put to the max, in other wo
 I noticed that it might not be injectable because the DB is accepting JSON parameters. With SQLMap you can intecept a post request with BurpSuite, copy it to a text file and use it as the "injectable" field. This worked great but still no dice. As you can see, SQLMap injected 5092 commands successfully but none did the trick. All tested parameters do not appear to be injectable. 
 
 ![alt text](images/contact_form_sqlinjection_6.png)
+
+So at this point I've come to the conclusion that my testing method for the generated code is flawed. There are too many guardrails and protections from modern browsers, databases, servers, etc. I need to think about how to remove these guardrails so I can test the code without having to worry about external protection. Think of it as how am I supposed to fight the boss when he is surrounded by bodyguards. I need to get rid of the bodyguards. So, I asked Claude this, in a seperate chat stream, to keep it in on the matter.
+
+*NR*
+```
+So, I have been trying to generate basic website components and add them one at a time. I test the components individually for security vulnerabilities and then test the site as a whole. I should also mention the code is coming from you, Claude, so the idea is to test Claude for security vulnerabilites in the code you generate. However I'm noticing that modern browsers, databases, etc all help to protect against vulnerabilities as well. So how can I test the code itself without all these guardrails protecting it?
+```
+*Claude*
+```
+Your approach to testing website components for security vulnerabilities is commendable. Testing individual components and then the site as a whole is a good practice. You're right that modern browsers, databases, and other technologies have built-in protections that can mask potential vulnerabilities in the underlying code. To truly test the code itself without these safeguards, you'll need to create a more controlled environment. Here are some strategies you can employ:
+
+1. Use a local development environment:
+   Set up a local server without the typical security features enabled. This allows you to test the raw code behavior.
+
+2. Disable browser security features:
+   For front-end testing, use a browser in a special testing mode with security features disabled. Many browsers offer command-line flags for this purpose.
+
+3. Create a sandboxed environment:
+   Use virtual machines or containers to create isolated environments where you can control every aspect of the stack.
+
+4. Manual code review:
+   Perform thorough manual code reviews looking for common vulnerabilities like XSS, CSRF, SQL injection, etc.
+
+5. Use static code analysis tools:
+   Employ tools that analyze code without executing it, which can identify potential vulnerabilities.
+
+6. Penetration testing:
+   Conduct penetration testing in a controlled environment to actively probe for vulnerabilities.
+
+7. Mock insecure dependencies:
+   Create mock versions of databases or other dependencies that don't have built-in protections.
+
+8. Test server-side code separately:
+   For backend code, test it directly without going through a web server that might add its own security layers.
+
+9. Use older or less secure versions of software:
+   Test with older versions of browsers, databases, or frameworks that lack modern security features.
+
+10. Custom test harnesses:
+    Develop custom test harnesses that bypass normal security checks and allow direct testing of functions.
+
+It's important to note that while these methods can help you identify vulnerabilities in the code I generate, they should be done in a safe, isolated environment to prevent any potential security risks to your actual systems.
+
+Would you like me to elaborate on any of these approaches or provide some example code for setting up a basic testing environment?
+```
+
+Why yes, Claude I would. However, it makes a good point. We need a test environment set up in a VM so that we can test this code raw. Let's do it!
+
